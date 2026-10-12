@@ -53,7 +53,7 @@ Incluye:
 - división del contenido en 3 bloques para distribuirlos en las capas RGB
 - generación de tres QR con los datos en cada capa
 - reconstrucción del archivo original a partir del escaneo de las capas
-
+s
 El proceso es:
 
 1. obtener el archivo de entrada
@@ -63,7 +63,7 @@ El proceso es:
    - `ext`
    - `size`
    - `data`
-4. comprimir el BSON con `zlib`
+4. comprimir el BSON con `zlib` 
 5. dividir el payload comprimido en 3 partes
 6. generar un QR por cada parte
 7. fusionar las 3 capas en una imagen RGB

@@ -48,8 +48,10 @@ def dividir_bytes_en_3_capas(bytes_datos):
     
     return bloque_r, bloque_g, bloque_b
 
-#
-ruta_entrada = "C:/Users/Usuario/Downloads/tester.csv"  
+ruta_entrada = "C:/Users/Usuario/Downloads/markdown.docx"  
+#ruta_entrada = "C:/Users/Usuario/Downloads/tester.csv"  
+#ruta_entrada = "C:/Users/Usuario/Downloads/steve.jpg"  
+#ruta_entrada = "C:/Users/Usuario/Documents/Tareaceti/Quinto Semestre/paralela/rsa/src/GUI.java"
 #ruta_entrada = "C:/Users/Usuario/Documents/Learning/QRCODEs/lib/Elctronica.csv"
 ruta_qr_salida = "C:/Users/Usuario/Documents/Learning/QRCODEs/lib/qr_txt_multiplexado.png"
 
