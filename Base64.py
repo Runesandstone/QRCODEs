@@ -159,7 +159,7 @@ if texto_base64_completo:
         # Traducir la cadena Base64 gigante de vuelta a bytes binarios originales
         bytes_archivo_reconstruido = base64.b64decode(texto_base64_completo)
         
-        # Escribir los bytes en un nuevo archivo ('wb' = write binary)
+        # Escribir los bytes en un nuevo archivo ('wb' = write binary)gggg
         with open(ruta_salida_reconstruido, "wb") as archivo_final:
             archivo_final.write(bytes_archivo_reconstruido)
             
