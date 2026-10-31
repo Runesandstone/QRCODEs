@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* CSS puro reutilizable para la web posterior */
+        :root {
+            --bg-color: #1e1e2e;
+            --card-bg: #2b2b3d;
+            --accent-color: #89b4fa;
+            --text-color: #cdd6f4;
+            --btn-hover: #b4befe;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        #qr-image {
+            display: none;
+            max-width: 100%;
+            height: auto;
+            margin: 15px auto 0;
+            border: 1px solid #45475a;
+            border-radius: 8px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--accent-color);
+        }
+
+        .btn-custom {
+            background-color: var(--accent-color);
+            color: #11111b;
+            border: none;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .btn-custom:hover {
+            background-color: var(--btn-hover);
+        }
+
+        .btn-custom:active {
+            transform: scale(0.98);
+        }
+
+        #log-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #181825;
+            border: 1px solid #45475a;
+            font-family: monospace;
+            font-size: 13px;
+            text-align: left;
+            word-break: break-all;
+            min-height: 60px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Procesador QRGB</h2>
+    <p>Selecciona un archivo para validar compresión y multiplexado.</p>
+    
+    <button class="btn-custom" onclick="cargarArchivo()">Cargar Archivo</button>
+
+    <div id="log-box">Esperando acción...</div>
+</div>
+<div class="container">
+    <h2>Visualizador de QR</h2>
+
+    <img id="qr-image" alt="QR Code">
+</div>
+<!--- recueprar archivos del qr--->
+<div class="container">
+    <h2>Recuperar Archivos del QR</h2>
+    <p>Selecciona un archivo QR para recuperar los archivos comprimidos.</p>
+    
+    <button class="btn-custom" onclick="cargarQr()">Cargar QR</button>
+
+    <div id="recovery-log-box">Esperando acción...</div>
+
+<script>
+    async function cargarArchivo() {
+        const logBox = document.getElementById('log-box');
+        const qrImage = document.getElementById('qr-image');
+        logBox.innerText = "Procesando...";
+
+        try {
+            const respuesta = await pywebview.api.seleccionar_y_procesar();
+            
+            if (respuesta.status === "ok") {
+                logBox.innerHTML = `<strong style="color: #a6e3a1">${respuesta.mensaje}</strong><br><br>${respuesta.detalles}`;
+                qrImage.style.display = "none";
+                qrImage.removeAttribute('src');
+                qrImage.src = respuesta.imagen;
+                qrImage.style.display = "block";
+            } else {
+                logBox.innerText = respuesta.mensaje;
+            }
+        } catch (err) {
+            logBox.innerText = "Error de comunicación con Python: " + err;
+        }
+    }
+
+    async function cargarQr() {
+        const logBox = document.getElementById('recovery-log-box');
+        logBox.innerText = "Procesando...";
+
+        try {
+            const respuesta = await pywebview.api.recuperar_archivo();
+            
+            if (respuesta.status === "ok") {
+                logBox.innerHTML = `<strong style="color: #a6e3a1">${respuesta.mensaje}</strong><br><br>${respuesta.detalles}`;
+            } else {
+                logBox.innerText = respuesta.mensaje;
+            }
+        } catch (err) {
+            logBox.innerText = "Error de comunicación con Python: " + err;
+        }
+    }
+</script>
+
+</body>
+</html>

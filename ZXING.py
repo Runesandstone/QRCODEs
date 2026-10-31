@@ -8,13 +8,6 @@ from PIL import Image
 import qrcode
 import zxingcpp
 
-#ruta_entrada = "C:/Users/Usuario/Downloads/markdown.docx"  
-ruta_entrada = "C:/Users/Usuario/Downloads/qr_capacidades (2).csv"  
-#ruta_entrada = "C:/Users/Usuario/Downloads/steve.jpg"  
-#ruta_entrada = "C:/Users/Usuario/Documents/Tareaceti/Quinto Semestre/paralela/rsa/src/GUI.java"
-#ruta_entrada = "C:/Users/Usuario/Documents/Learning/QRCODEs/lib/Elctronica.csv"
-ruta_qr_salida = "C:/Users/Usuario/Documents/Learning/QRCODEs/lib/qr_multiplexado.png"
-
 
 def empaquetar_archivo(ruta_archivo):
     
@@ -31,10 +24,9 @@ def empaquetar_archivo(ruta_archivo):
         "size": len(bytes_archivo),
         "data": bytes_archivo
     })
-
     bytes_comprimidos = zlib.compress(payload_bson)
+    print(f"Archivo empaquetado en BSON y comprimido con zlib. Tamaño final: {len(bytes_comprimidos)} bytes")
     return bytes_comprimidos
-
 
 def dividir_bytes(bytes_datos):
     tamano_tercio = math.ceil(len(bytes_datos) / 3)
@@ -50,29 +42,29 @@ def dividir_bytes(bytes_datos):
     
     return bloque_r, bloque_g, bloque_b
 
-def generar_qr(ruta_entrada, ruta_qr_salida):
+def generar_qr(ruta_entrada, ruta_qr_salida, error_correction=None):
     try:
         bytes_comprimidos = empaquetar_archivo(ruta_entrada)
         bloque_r, bloque_g, bloque_b = dividir_bytes(bytes_comprimidos)
 
-        print("¿Qué corrección de errores deseas? Cuanto menor sea el porcentaje," \
-        "menos datos pueden guardarse pero más datos se podrán recuperar en caso de daño")
-        print("1. L (7%)\n2. M (15%)\n3. Q (25%)\n4. H (30%)")
-        choose = int(input("Ingresa el número de la opción deseada (1-4): "))
+        if error_correction is None:
+            print("¿Qué corrección de errores deseas? Cuanto menor sea el porcentaje," \
+            "menos datos pueden guardarse pero más datos se podrán recuperar en caso de daño")
+            print("1. L (7%)\n2. M (15%)\n3. Q (25%)\n4. H (30%)")
+            choose = int(input("Ingresa el número de la opción deseada (1-4): "))
 
-
-        match choose:
-            case 1:
-                error_correction=qrcode.constants.ERROR_CORRECT_L
-            case 2:
-                error_correction=qrcode.constants.ERROR_CORRECT_M
-            case 3:
-                error_correction=qrcode.constants.ERROR_CORRECT_Q
-            case 4:
-                error_correction=qrcode.constants.ERROR_CORRECT_H
-            case _:
-                print("Opción inválida. Se usará la corrección de errores por defecto (M).")
-                error_correction=qrcode.constants.ERROR_CORRECT_M
+            match choose:
+                case 1:
+                    error_correction = qrcode.constants.ERROR_CORRECT_L
+                case 2:
+                    error_correction = qrcode.constants.ERROR_CORRECT_M
+                case 3:
+                    error_correction = qrcode.constants.ERROR_CORRECT_Q
+                case 4:
+                    error_correction = qrcode.constants.ERROR_CORRECT_H
+                case _:
+                    print("Opción inválida. Se usará la corrección de errores por defecto (M).")
+                    error_correction = qrcode.constants.ERROR_CORRECT_M
 
 
         configuracion_qr = dict(
@@ -109,6 +101,7 @@ def generar_qr(ruta_entrada, ruta_qr_salida):
 
     except Exception as e:
         print(f"Ocurrió un error en la generación: {e}")
+        raise
 
 def escanear_qr(ruta_qr_salida):
     qr_escaneado = Image.open(ruta_qr_salida)
@@ -146,30 +139,20 @@ def escanear_qr(ruta_qr_salida):
 def reconstruir_archivo(bytes_totales):
 
     if bytes_totales:
-        try:
-            payload_bson_recuperado = zlib.decompress(bytes_totales)
-            datos_recuperados = bson.decode(payload_bson_recuperado)
+        payload_bson_recuperado = zlib.decompress(bytes_totales)
+        datos_recuperados = bson.decode(payload_bson_recuperado)
 
-            nombre_orig = datos_recuperados["name"]
-            ext_orig = datos_recuperados["ext"]
-            contenido_binario = datos_recuperados["data"]
+        nombre_orig = datos_recuperados["name"]
+        ext_orig = datos_recuperados["ext"]
+        contenido_binario = datos_recuperados["data"]
 
-            directorio_salida = "lib/"
-            ruta_salida_reconstruido = os.path.join(directorio_salida, f"{nombre_orig}_recuperado.{ext_orig}")
+        directorio_salida = "lib/"
+        ruta_salida_reconstruido = os.path.join(directorio_salida, f"{nombre_orig}_recuperado.{ext_orig}")
 
-            with open(ruta_salida_reconstruido, "wb") as archivo_final:
-                archivo_final.write(contenido_binario)
+        with open(ruta_salida_reconstruido, "wb") as archivo_final:
+            archivo_final.write(contenido_binario)
 
-            print(f"Archivo recuperado: '{nombre_orig}_recuperado.{ext_orig}'")
+        print(f"Archivo recuperado: '{nombre_orig}_recuperado.{ext_orig}'")
+        return ruta_salida_reconstruido
 
-        except Exception as e:
-            print(f"Error al descompilar el paquete BSON/zlib: {e}")
-
-
-def main():
-    empaquetar_archivo(ruta_entrada)
-    generar_qr(ruta_entrada, ruta_qr_salida)
-    bytes_recuperados = escanear_qr(ruta_qr_salida)
-    reconstruir_archivo(bytes_recuperados)
-
-main()
+    raise ValueError("No se recuperaron bytes del QR; no es posible reconstruir el archivo.")
