@@ -14,6 +14,8 @@ Luego, al combinar estas capas en una sola imagen, se obtiene un QR multiplexado
 
 ## Archivos principales
 
+> :warning: **Aviso**: Crea una carpeta /lib al mismo nivel que los siguientes archivos, para que elemtnos como ZXING.py y GUI.py puedan funcionar correctamente.
+
 ### 1) `Prototipo1.py`
 
 Es el primer prototipo funcional.
@@ -72,9 +74,10 @@ El proceso es:
 
 Esto permite transmitir archivos binarios (CSV, ZIP, etc.) mediante códigos QR.
 
-### 4) `BSONqr - ZXING.py`
+### 4) `ZXING.py`
 
 Es una copia de prueba/backup del enfoque anterior. Deja de utilizar pyzbar para la generacion y lectura de los códigos QR y pasa a usar zxingcpp, que muestra un mejor desempeño en la lectura de los datos binarios, mismos que se corromían e imposibilitaban la lectura en pyzbar. 
+Se le cambió el nombre para poder ser importado en la GUI.
 
 Archivos probados, subidos y descomprimidos correctamente:
 1. `markdown-example.md`, de 26.7KB (Aproximadamente, el máximo tamaño permitido para un markdown)
@@ -83,6 +86,11 @@ Archivos probados, subidos y descomprimidos correctamente:
 4. `Elctronica.csv`, de de 6 KB
 5. `steve.jpg`, de 8.39KB (Tamaño aproximado máximo permitido para un JPG)
 6. `documento.docx`, de 8.61 KB (Tamaño aproximado máximo permitido para un DOCX)
+
+### 5) `GUI.py`
+
+Se limita a demostrar de forma visual el funcionamiento del proyecto, permitiendo al usuario seleccionar un archivo para generar los QR y luego recuperar el archivo a partir de la imagen multiplexada.
+
 
 ## Dependencias
 
