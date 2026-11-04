@@ -14,7 +14,6 @@ class BackendAPI:
         self._window = window
 
     def seleccionar_y_procesar(self):
-        """Abre un diálogo nativo del S.O. para elegir un archivo y simula el proceso."""
         # Diálogo nativo para seleccionar archivo
         file_types = ('Archivos recomendados (*.csv;*.txt;*.json)', 'Todos los archivos (*.*)')
         result = self._window.create_file_dialog(FileDialog.OPEN, allow_multiple=False, file_types=file_types)
@@ -22,8 +21,8 @@ class BackendAPI:
         if result:
             ruta_archivo = result[0]
             tamano = os.path.getsize(ruta_archivo)
-            
-            ruta_qr_salida = os.path.splitext(ruta_archivo)[0] + '_qr.png'
+            nombre = os.path.splitext(os.path.basename(ruta_archivo))[0]
+            ruta_qr_salida = os.path.join("lib", f"{nombre}_qr.png")
             
             generar_qr(
                 ruta_archivo,
@@ -66,7 +65,7 @@ if __name__ == '__main__':
     # Creamos la ventana nativa renderizando el HTML/CSS
     window = webview.create_window(
         title='Generador QRGB - Tester GUI',
-        url=r'C:\Users\Usuario\Documents\Learning\QRCODEs\index.html',
+        url=os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html"),
         js_api=api,
         width=1000,
         height=1000,

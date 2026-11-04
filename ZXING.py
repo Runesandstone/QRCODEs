@@ -110,7 +110,6 @@ def escanear_qr(ruta_qr_salida):
     capa_verde.save("lib/qr_everde.png")
     capa_azul.save("lib/qr_eazul.png")
 
-    # AGREGADO: limitar ZXing a QR y conservar sus bytes sin convertirlos a texto.
     datos_rojos = zxingcpp.read_barcodes(
         capa_roja, formats=zxingcpp.BarcodeFormat.QRCode
     )
