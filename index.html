@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <style>
+        /* CSS puro reutilizable para la web posterior */
         :root {
             --bg-color: #1e1e2e;
             --card-bg: #2b2b3d;
@@ -39,8 +40,8 @@
             text-align: center;
         }
 
-        #qr-image {
-            display: none;
+        #qr-gallery img {
+            display: block;
             max-width: 100%;
             height: auto;
             margin: 15px auto 0;
@@ -75,7 +76,8 @@
             transform: scale(0.98);
         }
 
-        #log-box {
+        #log-box,
+        #recovery-log-box {
             margin-top: 20px;
             padding: 15px;
             border-radius: 8px;
@@ -102,7 +104,7 @@
 <div class="container">
     <h2>Visualizador de QR</h2>
 
-    <img id="qr-image" alt="QR Code">
+    <div id="qr-gallery"></div>
 </div>
 <!--- recueprar archivos del qr--->
 <div class="container">
@@ -112,22 +114,26 @@
     <button class="btn-custom" onclick="cargarQr()">Cargar QR</button>
 
     <div id="recovery-log-box">Esperando acción...</div>
+</div>
 
 <script>
     async function cargarArchivo() {
         const logBox = document.getElementById('log-box');
-        const qrImage = document.getElementById('qr-image');
+        const gallery = document.getElementById('qr-gallery');
         logBox.innerText = "Procesando...";
+        gallery.innerHTML = "";
 
         try {
             const respuesta = await pywebview.api.seleccionar_y_procesar();
             
             if (respuesta.status === "ok") {
                 logBox.innerHTML = `<strong style="color: #a6e3a1">${respuesta.mensaje}</strong><br><br>${respuesta.detalles}`;
-                qrImage.style.display = "none";
-                qrImage.removeAttribute('src');
-                qrImage.src = respuesta.imagen;
-                qrImage.style.display = "block";
+                respuesta.imagenes.forEach((src, i) => {
+                    const img = new Image();
+                    img.alt = `QR ${i + 1} de ${respuesta.imagenes.length}`;
+                    img.src = src;
+                    gallery.appendChild(img);
+                });
             } else {
                 logBox.innerText = respuesta.mensaje;
             }

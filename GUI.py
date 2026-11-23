@@ -14,6 +14,7 @@ class BackendAPI:
         self._window = window
 
     def seleccionar_y_procesar(self):
+        """Abre un diálogo nativo del S.O. para elegir un archivo y simula el proceso."""
         # Diálogo nativo para seleccionar archivo
         file_types = ('Archivos recomendados (*.csv;*.txt;*.json)', 'Todos los archivos (*.*)')
         result = self._window.create_file_dialog(FileDialog.OPEN, allow_multiple=False, file_types=file_types)
@@ -21,39 +22,50 @@ class BackendAPI:
         if result:
             ruta_archivo = result[0]
             tamano = os.path.getsize(ruta_archivo)
-            nombre = os.path.splitext(os.path.basename(ruta_archivo))[0]
-            ruta_qr_salida = os.path.join("lib", f"{nombre}_qr.png")
             
-            generar_qr(
-                ruta_archivo,
-                ruta_qr_salida,
-                error_correction=qrcode.constants.ERROR_CORRECT_L,
-            )
-            with open(ruta_qr_salida, "rb") as archivo:
-                imagen_qr = base64.b64encode(archivo.read()).decode("ascii")
+            ruta_qr_salida = os.path.splitext(ruta_archivo)[0] + '_qr.png'
+            
+            try:
+                rutas_qr = generar_qr(
+                    ruta_archivo,
+                    ruta_qr_salida,
+                    error_correction=qrcode.constants.ERROR_CORRECT_L,
+                )
+            except Exception as e:
+                return {"status": "error", "mensaje": f"Error al generar el QR: {e}"}
+
+            imagenes = []
+            for ruta in rutas_qr:
+                with open(ruta, "rb") as archivo:
+                    b64 = base64.b64encode(archivo.read()).decode("ascii")
+                imagenes.append(f"data:image/png;base64,{b64}")
 
             return {
                 "status": "ok",
                 "mensaje": f"Archivo cargado: {os.path.basename(ruta_archivo)}",
-                "detalles": f"Tamaño: {tamano} bytes",
-                "imagen": f"data:image/png;base64,{imagen_qr}",
+                "detalles": f"Tamaño: {tamano} bytes. Imágenes generadas: {len(rutas_qr)}",
+                "imagenes": imagenes,
             }
         
         return {"status": "cancel", "mensaje": "Selección cancelada."}
 
     def recuperar_archivo(self):
         file_types = ('Archivos QR (*.png;*.jpg;*.jpeg)',)
-        result = self._window.create_file_dialog(FileDialog.OPEN, allow_multiple=False, file_types=file_types)
+        result = self._window.create_file_dialog(FileDialog.OPEN, allow_multiple=True, file_types=file_types)
         
         if result:
-            ruta_qr = result[0]
+            rutas_qr = list(result)
 
-            bytes_totales = escanear_qr(ruta_qr)
-            ruta_recuperada = reconstruir_archivo(bytes_totales)
+            try:
+                bytes_totales = escanear_qr(rutas_qr)
+                ruta_recuperada = reconstruir_archivo(bytes_totales)
+            except Exception as e:
+                return {"status": "error", "mensaje": f"No se pudo recuperar: {e}"}
 
+            nombres = ", ".join(os.path.basename(r) for r in rutas_qr)
             return {
                 "status": "ok",
-                "mensaje": f"Archivo QR cargado: {os.path.basename(ruta_qr)}",
+                "mensaje": f"QR cargado(s): {nombres}",
                 "detalles": f"Archivo recuperado en: {ruta_recuperada}",
             }
         
